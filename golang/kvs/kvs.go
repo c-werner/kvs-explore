@@ -2,6 +2,7 @@ package kvs
 
 import (
 	"sync"
+	"sync/atomic"
 )
 
 type Store interface {
@@ -10,14 +11,14 @@ type Store interface {
 	Has(key string) bool
 	Del(key string) bool
 	Incr() Store
-	Count() uint
+	Count() uint64
 	Keys() []string
 }
 
 type store struct {
-	data map[string]string
-	counter uint
-	mutex sync.RWMutex
+	data    map[string]string
+	counter uint64
+	mutex   sync.RWMutex
 }
 
 func New() *store {
@@ -31,16 +32,13 @@ func (s *store) Incr() Store {
 		return nil
 	}
 
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
 	s.counter++
+	atomic.AddUint64(&s.counter, 1)
 
 	return s
 }
 
-
-func (s *store) Count() uint {
+func (s *store) Count() uint64 {
 	if s == nil {
 		return 0
 	}
