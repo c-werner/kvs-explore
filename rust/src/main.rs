@@ -27,15 +27,12 @@ async fn get_or_update_key(
     key_info: web::Path<KeyInfo>,
     query_info: web::Query<ValueInfo>,
 ) -> String {
-
     /* The query_info.v.clone() here feels wrong but I'm not sure
-        what the right answer is for this.
-        Honestly, I'm confused why I can't send query_info.v
-        *without* cloning it
-     */
-    let result = data
-        .incr()
-        .update(&key_info.key, query_info.v.clone());
+       what the right answer is for this.
+       Honestly, I'm confused why I can't send query_info.v
+       *without* cloning it
+    */
+    let result = data.incr().update(&key_info.key, query_info.v.clone());
 
     match result {
         Some(val) => val,

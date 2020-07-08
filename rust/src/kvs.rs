@@ -1,6 +1,6 @@
 use std::collections::HashMap;
-use std::sync::RwLock;
 use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::RwLock;
 
 pub(crate) struct Store {
     pub(crate) counter: AtomicU64,
@@ -66,7 +66,7 @@ impl Store {
 
         match map.remove(key) {
             Some(_) => true,
-            None => false
+            None => false,
         }
     }
 }
