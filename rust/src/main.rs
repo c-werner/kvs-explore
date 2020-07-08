@@ -32,7 +32,7 @@ async fn get_or_update_key(
        Honestly, I'm confused why I can't send query_info.v
        *without* cloning it
     */
-    let result = data.begin().update(&key_info.key, query_info.v.clone());
+    let result = data.begin().update(&key_info.key, query_info.into_inner().v);
 
     match result {
         Some(val) => val,
