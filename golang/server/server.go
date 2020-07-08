@@ -10,25 +10,24 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-
 type svc struct {
-	k kvs.Store
+	k      kvs.Store
 	router *httprouter.Router
 }
 
 const keyName = "key"
 
 func New(k kvs.Store) *svc {
-	s := &svc {
-		k: k,
+	s := &svc{
+		k:      k,
 		router: httprouter.New(),
 	}
 
 	s.router.GET("/", s.Count)
 	s.router.GET("/list", s.List)
-	s.router.GET("/k/:" + keyName, s.GetOrUpdate)
-	s.router.GET("/d/:" + keyName, s.Del)
-	s.router.GET("/h/:" + keyName, s.Has)
+	s.router.GET("/k/:"+keyName, s.GetOrUpdate)
+	s.router.GET("/d/:"+keyName, s.Del)
+	s.router.GET("/h/:"+keyName, s.Has)
 
 	return s
 }
@@ -59,7 +58,7 @@ func (s *svc) Count(w http.ResponseWriter, r *http.Request, p httprouter.Params)
 func (s *svc) GetOrUpdate(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	key := p.ByName(keyName)
 	if key == "" {
-		s.ArgError(w,"no key specified")
+		s.ArgError(w, "no key specified")
 		return
 	}
 
@@ -81,7 +80,7 @@ func (s *svc) GetOrUpdate(w http.ResponseWriter, r *http.Request, p httprouter.P
 func (s *svc) Has(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	key := p.ByName(keyName)
 	if key == "" {
-		s.ArgError(w,"no key specified")
+		s.ArgError(w, "no key specified")
 		return
 	}
 
@@ -92,7 +91,7 @@ func (s *svc) Has(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 func (s *svc) Del(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	key := p.ByName(keyName)
 	if key == "" {
-		s.ArgError(w,"no key specified")
+		s.ArgError(w, "no key specified")
 		return
 	}
 
