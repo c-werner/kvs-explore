@@ -1,37 +1,37 @@
 use std::collections::HashMap;
-use std::sync::Mutex;
+use std::sync::RwLock;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 pub(crate) struct Store {
-    pub(crate) counter: Mutex<i32>,
-    pub(crate) map: Mutex<HashMap<String, String>>,
+    pub(crate) counter: AtomicU64,
+    pub(crate) map: RwLock<HashMap<String, String>>,
 }
 
 pub(crate) fn new() -> Store {
     Store {
-        counter: Mutex::new(0),
-        map: Mutex::new(HashMap::new()),
+        counter: AtomicU64::new(0),
+        map: RwLock::new(HashMap::new()),
     }
 }
 
 impl Store {
     pub(crate) fn incr(&self) -> &Self {
-        let mut counter = self.counter.lock().unwrap();
-        *counter += 1;
+        self.counter.fetch_add(1, Ordering::Relaxed);
         self
     }
 
-    pub(crate) fn count(&self) -> i32 {
-        *self.counter.lock().unwrap()
+    pub(crate) fn count(&self) -> u64 {
+        self.counter.load(Ordering::Relaxed)
     }
 
     pub(crate) fn keys(&self) -> Vec<String> {
-        let map = self.map.lock().unwrap();
+        let map = self.map.read().unwrap();
 
-        map.keys().map(|x| x.clone()).collect::<Vec<_>>()
+        map.keys().cloned().collect()
     }
 
     fn get(&self, key: &String) -> Option<String> {
-        let map = self.map.lock().unwrap();
+        let map = self.map.read().unwrap();
 
         match map.get(key.as_str()) {
             Some(val) => Some(val.to_string()),
@@ -40,7 +40,7 @@ impl Store {
     }
 
     fn set(&self, key: &String, value: &String) {
-        let mut map = self.map.lock().unwrap();
+        let mut map = self.map.write().unwrap();
 
         map.insert(key.clone(), value.clone());
     }
@@ -56,13 +56,13 @@ impl Store {
     }
 
     pub(crate) fn has(&self, key: &String) -> bool {
-        let map = self.map.lock().unwrap();
+        let map = self.map.read().unwrap();
 
         map.contains_key(key)
     }
 
     pub(crate) fn del(&self, key: &String) -> bool {
-        let mut map = self.map.lock().unwrap();
+        let mut map = self.map.write().unwrap();
 
         match map.remove(key) {
             Some(_) => true,
