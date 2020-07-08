@@ -1,2 +1,3 @@
 # kvs-explore
-Simple KVS Store Implemented in multiple languages
+Simple KVS HTTP Service implemented in a few languages to explore
+
