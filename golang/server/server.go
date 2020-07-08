@@ -52,7 +52,7 @@ func (s *svc) RespBool(w http.ResponseWriter, b bool) {
 }
 
 func (s *svc) Count(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	s.Resp(w, fmt.Sprintf("Request number: %d", s.k.Incr().Count()))
+	s.Resp(w, fmt.Sprintf("Request number: %d", s.k.Begin().Count()))
 }
 
 func (s *svc) GetOrUpdate(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -64,9 +64,9 @@ func (s *svc) GetOrUpdate(w http.ResponseWriter, r *http.Request, p httprouter.P
 
 	value := r.URL.Query().Get("v")
 	if value != "" {
-		s.k.Incr().Set(key, value)
+		s.k.Begin().Set(key, value)
 	} else {
-		value = s.k.Incr().Get(key)
+		value = s.k.Begin().Get(key)
 	}
 
 	if value == "" {
@@ -84,7 +84,7 @@ func (s *svc) Has(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		return
 	}
 
-	ok := s.k.Incr().Has(key)
+	ok := s.k.Begin().Has(key)
 	s.RespBool(w, ok)
 }
 
@@ -95,12 +95,12 @@ func (s *svc) Del(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		return
 	}
 
-	ok := s.k.Incr().Del(key)
+	ok := s.k.Begin().Del(key)
 	s.RespBool(w, ok)
 }
 
 func (s *svc) List(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	keys := s.k.Incr().Keys()
+	keys := s.k.Begin().Keys()
 	s.Resp(w, strings.Join(keys, "\n"))
 }
 

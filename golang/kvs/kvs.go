@@ -6,13 +6,7 @@ import (
 )
 
 type Store interface {
-	Get(key string) string
-	Set(key, value string)
-	Has(key string) bool
-	Del(key string) bool
-	Incr() Store
-	Count() uint64
-	Keys() []string
+	Begin() *readyStore
 }
 
 type store struct {
@@ -21,24 +15,27 @@ type store struct {
 	mutex   sync.RWMutex
 }
 
+type readyStore struct {
+	*store
+}
+
 func New() *store {
 	return &store{
 		data: make(map[string]string),
 	}
 }
 
-func (s *store) Incr() Store {
+func (s *store) Begin() *readyStore {
 	if s == nil {
 		return nil
 	}
 
-	s.counter++
 	atomic.AddUint64(&s.counter, 1)
 
-	return s
+	return &readyStore{store: s}
 }
 
-func (s *store) Count() uint64 {
+func (s *readyStore) Count() uint64 {
 	if s == nil {
 		return 0
 	}
@@ -49,7 +46,7 @@ func (s *store) Count() uint64 {
 	return s.counter
 }
 
-func (s *store) Get(key string) string {
+func (s *readyStore) Get(key string) string {
 	if s == nil {
 		return ""
 	}
@@ -61,7 +58,7 @@ func (s *store) Get(key string) string {
 	return value
 }
 
-func (s *store) Set(key, value string) {
+func (s *readyStore) Set(key, value string) {
 	if s == nil {
 		return
 	}
@@ -72,7 +69,7 @@ func (s *store) Set(key, value string) {
 	s.data[key] = value
 }
 
-func (s *store) Has(key string) bool {
+func (s *readyStore) Has(key string) bool {
 	if s == nil {
 		return false
 	}
@@ -85,7 +82,7 @@ func (s *store) Has(key string) bool {
 	return ok
 }
 
-func (s *store) Del(key string) bool {
+func (s *readyStore) Del(key string) bool {
 	if s == nil {
 		return false
 	}
@@ -99,7 +96,7 @@ func (s *store) Del(key string) bool {
 	return ok
 }
 
-func (s *store) Keys() []string {
+func (s *readyStore) Keys() []string {
 	var keys []string
 
 	if s == nil {
