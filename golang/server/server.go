@@ -2,11 +2,11 @@ package server
 
 import (
 	"fmt"
-	"github.com/c-werner/kvs-explore/golang/golang/kvs"
 	"log"
 	"net/http"
 	"strings"
 
+	"github.com/c-werner/kvs-explore/golang/golang/kvs"
 	"github.com/julienschmidt/httprouter"
 )
 
