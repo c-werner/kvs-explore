@@ -5,11 +5,11 @@ use serde::Deserialize;
 
 #[get("/")]
 async fn index(data: web::Data<kvs::Store>) -> String {
-    format!("Request number: {}", data.incr().count())
+    format!("Request number: {}", data.begin().count())
 }
 
 async fn list_keys(data: web::Data<kvs::Store>) -> String {
-    data.keys().join("\n")
+    data.begin().keys().join("\n")
 }
 
 #[derive(Deserialize)]
@@ -32,7 +32,7 @@ async fn get_or_update_key(
        Honestly, I'm confused why I can't send query_info.v
        *without* cloning it
     */
-    let result = data.incr().update(&key_info.key, query_info.v.clone());
+    let result = data.begin().update(&key_info.key, query_info.v.clone());
 
     match result {
         Some(val) => val,
@@ -41,11 +41,11 @@ async fn get_or_update_key(
 }
 
 async fn del_key(data: web::Data<kvs::Store>, key_info: web::Path<KeyInfo>) -> String {
-    data.incr().del(&key_info.key).to_string()
+    data.begin().del(&key_info.key).to_string()
 }
 
 async fn has_key(data: web::Data<kvs::Store>, key_info: web::Path<KeyInfo>) -> String {
-    data.incr().has(&key_info.key).to_string()
+    data.begin().has(&key_info.key).to_string()
 }
 
 #[actix_rt::main]

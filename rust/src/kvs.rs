@@ -15,23 +15,33 @@ pub(crate) fn new() -> Store {
 }
 
 impl Store {
-    pub(crate) fn incr(&self) -> &Self {
-        self.counter.fetch_add(1, Ordering::Relaxed);
-        self
+    pub(crate) fn begin(&self) -> ReadyStore {
+        new_unlocked(self)
     }
+}
 
+pub(crate) struct ReadyStore<'a> {
+    store: &'a Store,
+}
+
+fn new_unlocked(s: &Store) -> ReadyStore {
+    s.counter.fetch_add(1, Ordering::Relaxed);
+    ReadyStore { store: s }
+}
+
+impl ReadyStore<'_> {
     pub(crate) fn count(&self) -> u64 {
-        self.counter.load(Ordering::Relaxed)
+        self.store.counter.load(Ordering::Relaxed)
     }
 
     pub(crate) fn keys(&self) -> Vec<String> {
-        let map = self.map.read().unwrap();
+        let map = self.store.map.read().unwrap();
 
         map.keys().cloned().collect()
     }
 
     fn get(&self, key: &String) -> Option<String> {
-        let map = self.map.read().unwrap();
+        let map = self.store.map.read().unwrap();
 
         match map.get(key.as_str()) {
             Some(val) => Some(val.to_string()),
@@ -40,7 +50,7 @@ impl Store {
     }
 
     fn set(&self, key: &String, value: &String) {
-        let mut map = self.map.write().unwrap();
+        let mut map = self.store.map.write().unwrap();
 
         map.insert(key.clone(), value.clone());
     }
@@ -56,13 +66,13 @@ impl Store {
     }
 
     pub(crate) fn has(&self, key: &String) -> bool {
-        let map = self.map.read().unwrap();
+        let map = self.store.map.read().unwrap();
 
         map.contains_key(key)
     }
 
     pub(crate) fn del(&self, key: &String) -> bool {
-        let mut map = self.map.write().unwrap();
+        let mut map = self.store.map.write().unwrap();
 
         match map.remove(key) {
             Some(_) => true,
