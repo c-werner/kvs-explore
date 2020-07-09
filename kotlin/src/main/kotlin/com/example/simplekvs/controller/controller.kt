@@ -23,23 +23,23 @@ class KVSController {
         return store.begin().count().toString()
     }
 
-    @GetMapping("/list", produces=[MediaType.TEXT_PLAIN_VALUE])
+    @GetMapping("/list", produces = [MediaType.TEXT_PLAIN_VALUE])
     fun list(): String {
         return store.begin().keys().joinToString("\n")
     }
 
-    @GetMapping("/k/{key}", produces=[MediaType.TEXT_PLAIN_VALUE])
-    fun getOrUpdate(@PathVariable(value="key") key: String, @RequestParam(value="v") value: String?): String {
+    @GetMapping("/k/{key}", produces = [MediaType.TEXT_PLAIN_VALUE])
+    fun getOrUpdate(@PathVariable(value = "key") key: String, @RequestParam(value = "v") value: String?): String {
         return store.begin().update(key, value) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "key not found")
     }
 
-    @GetMapping("/d/{key}", produces=[MediaType.TEXT_PLAIN_VALUE])
-    fun del(@PathVariable(value="key") key: String): String {
+    @GetMapping("/d/{key}", produces = [MediaType.TEXT_PLAIN_VALUE])
+    fun del(@PathVariable(value = "key") key: String): String {
         return store.begin().del(key).toString()
     }
 
-    @GetMapping("/h/{key}", produces=[MediaType.TEXT_PLAIN_VALUE])
-    fun has(@PathVariable(value="key") key: String): String {
+    @GetMapping("/h/{key}", produces = [MediaType.TEXT_PLAIN_VALUE])
+    fun has(@PathVariable(value = "key") key: String): String {
         return store.begin().has(key).toString()
     }
 }
