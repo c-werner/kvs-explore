@@ -1,12 +1,10 @@
-package com.example.simplekvs
+package com.example.simplekvs.store
 
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.withLock
 
 class Store() {
-
-
     class ReadyStore() {
         var counter = AtomicLong(0)
         var data = HashMap<String, String>()

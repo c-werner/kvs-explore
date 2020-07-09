@@ -1,7 +1,10 @@
-package com.example.simplekvs
+package com.example.simplekvs.controller
 
+import com.example.simplekvs.store.Store
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.server.ResponseStatusException
 
 @RestController
 class KVSController {
@@ -13,26 +16,22 @@ class KVSController {
         return store.begin().count().toString()
     }
 
-    @GetMapping("/list")
+    @GetMapping("/list", produces=[MediaType.TEXT_PLAIN_VALUE])
     fun list(): String {
         return store.begin().keys().joinToString("\n")
     }
 
-    @GetMapping("/k/{key}")
-    @ResponseBody
+    @GetMapping("/k/{key}", produces=[MediaType.TEXT_PLAIN_VALUE])
     fun getOrUpdate(@PathVariable(value="key") key: String, @RequestParam(value="v") value: String?): String {
-        // TODO 404 if not found
-        return store.begin().update(key, value) ?: "Not Found"
+        return store.begin().update(key, value) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "key not found")
     }
 
-    @GetMapping("/d/{key}")
-    @ResponseBody
+    @GetMapping("/d/{key}", produces=[MediaType.TEXT_PLAIN_VALUE])
     fun del(@PathVariable(value="key") key: String): String {
         return store.begin().del(key).toString()
     }
 
-    @GetMapping("/h/{key}")
-    @ResponseBody
+    @GetMapping("/h/{key}", produces=[MediaType.TEXT_PLAIN_VALUE])
     fun has(@PathVariable(value="key") key: String): String {
         return store.begin().has(key).toString()
     }
