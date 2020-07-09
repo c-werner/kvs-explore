@@ -10,8 +10,6 @@ import org.springframework.web.server.ResponseStatusException
 
 @RestController
 class KVSController {
-    var store = Store()
-
     @ExceptionHandler(value = [(ResponseStatusException::class)])
     fun handleUserAlreadyExists(ex: ResponseStatusException): ResponseEntity<String> {
         return ResponseEntity.status(ex.status).body(ex.reason)
@@ -20,26 +18,26 @@ class KVSController {
     @GetMapping("/")
     @ResponseBody
     fun count(): String {
-        return store.begin().count().toString()
+        return Store.begin().count().toString()
     }
 
     @GetMapping("/list", produces = [MediaType.TEXT_PLAIN_VALUE])
     fun list(): String {
-        return store.begin().keys().joinToString("\n")
+        return Store.begin().keys().joinToString("\n")
     }
 
     @GetMapping("/k/{key}", produces = [MediaType.TEXT_PLAIN_VALUE])
     fun getOrUpdate(@PathVariable(value = "key") key: String, @RequestParam(value = "v") value: String?): String {
-        return store.begin().update(key, value) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "key not found")
+        return Store.begin().update(key, value) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "key not found")
     }
 
     @GetMapping("/d/{key}", produces = [MediaType.TEXT_PLAIN_VALUE])
     fun del(@PathVariable(value = "key") key: String): String {
-        return store.begin().del(key).toString()
+        return Store.begin().del(key).toString()
     }
 
     @GetMapping("/h/{key}", produces = [MediaType.TEXT_PLAIN_VALUE])
     fun has(@PathVariable(value = "key") key: String): String {
-        return store.begin().has(key).toString()
+        return Store.begin().has(key).toString()
     }
 }
