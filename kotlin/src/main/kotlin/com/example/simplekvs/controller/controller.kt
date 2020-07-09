@@ -6,19 +6,16 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
 
-@ControllerAdvice
-class ControllerAdviceRequestError : ResponseEntityExceptionHandler() {
-    @ExceptionHandler(value = [(ResponseStatusException::class)])
-    fun handleUserAlreadyExists(ex: ResponseStatusException): ResponseEntity<String> {
-        return ResponseEntity.status(ex.status).body(ex.reason)
-    }
-}
 
 @RestController
 class KVSController {
     var store = Store()
+
+    @ExceptionHandler(value = [(ResponseStatusException::class)])
+    fun handleUserAlreadyExists(ex: ResponseStatusException): ResponseEntity<String> {
+        return ResponseEntity.status(ex.status).body(ex.reason)
+    }
 
     @GetMapping("/")
     @ResponseBody
