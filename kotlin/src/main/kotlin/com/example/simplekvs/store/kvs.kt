@@ -5,7 +5,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.withLock
 
 object Store {
-    object ReadyStore {
+    class ReadyStore {
         var counter = AtomicLong(0)
         var data = HashMap<String, String>()
         var lock = ReentrantReadWriteLock()
@@ -55,8 +55,10 @@ object Store {
 
     }
 
+    private val store = ReadyStore()
+
     fun begin(): ReadyStore {
-        ReadyStore.counter.incrementAndGet()
-        return ReadyStore
+        store.counter.incrementAndGet()
+        return store
     }
 }
