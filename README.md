@@ -5,7 +5,7 @@ I wouldn't suggest using these as a model for anything, the APIs and program str
 
 ## TODO
 - [ ] Tests
-- [ ] The Rust version doesn't use status codes
+- [X] The Rust version doesn't use status codes
 - [ ] More languages
-- [ ] Client Library
+- [X] Client Library
 - [ ] Structured Responses 
