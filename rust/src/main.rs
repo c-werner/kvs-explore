@@ -1,6 +1,6 @@
 mod kvs;
 
-use actix_web::{get, web, App, HttpServer};
+use actix_web::{get, web, App, HttpServer, HttpResponse, Result};
 use serde::Deserialize;
 
 #[get("/")]
@@ -26,17 +26,12 @@ async fn get_or_update_key(
     data: web::Data<kvs::Store>,
     key_info: web::Path<KeyInfo>,
     query_info: web::Query<ValueInfo>,
-) -> String {
-    /* The query_info.v.clone() here feels wrong but I'm not sure
-       what the right answer is for this.
-       Honestly, I'm confused why I can't send query_info.v
-       *without* cloning it
-    */
+) -> Result<HttpResponse> {
     let result = data.begin().update(&key_info.key, query_info.into_inner().v);
 
     match result {
-        Some(val) => val,
-        None => format!("'{}' not found", &key_info.key),
+        Some(val) => Ok(HttpResponse::Ok().body(val)),
+        None => Ok(HttpResponse::NotFound().body(format!("'{}' not found", &key_info.key))),
     }
 }
 
