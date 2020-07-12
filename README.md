@@ -8,4 +8,4 @@ I wouldn't suggest using these as a model for anything, the APIs and program str
 - [X] The Rust version doesn't use status codes
 - [ ] More languages
 - [X] Client Library
-- [ ] Structured Responses 
+- [X] Structured Responses 

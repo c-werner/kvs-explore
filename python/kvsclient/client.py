@@ -1,6 +1,11 @@
 import requests
+import json
 
-TRUE = b'true'
+
+def resp_get(resp, field):
+    resp_content = resp.content.decode("utf-8")
+    r = json.loads(resp_content)
+    return r[field]
 
 
 class KVS(object):
@@ -22,7 +27,7 @@ class KVS(object):
         if resp.status_code == 404:
             raise KeyError
 
-        return resp.content.decode("utf-8")
+        return resp_get(resp, 'value')
 
     def set(self, key, value):
         requests.get('http://{host}/k/{key}?v={value}'.format(
@@ -39,7 +44,7 @@ class KVS(object):
             host=self.host,
             key=key,
         ))
-        return resp.content == TRUE
+        return resp_get(resp, 'ok')
 
     def __contains__(self, item):
         return self.has(item)
@@ -49,7 +54,7 @@ class KVS(object):
             host=self.host,
             key=key,
         ))
-        return resp.content == TRUE
+        return resp_get(resp, 'ok')
 
     def __delitem__(self, key):
         return self.remove(key)
@@ -58,7 +63,4 @@ class KVS(object):
         resp = requests.get('http://{host}/list'.format(
             host=self.host,
         ))
-        return resp.content.decode("utf-8").split('\n')
-
-
-
+        return resp_get(resp, 'keys')

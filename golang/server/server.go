@@ -1,13 +1,9 @@
 package server
 
 import (
-	"fmt"
-	"log"
-	"net/http"
-	"strings"
-
 	"github.com/c-werner/kvs-explore/golang/golang/kvs"
 	"github.com/julienschmidt/httprouter"
+	"net/http"
 )
 
 type svc struct {
@@ -32,33 +28,14 @@ func New(k kvs.Store) *svc {
 	return s
 }
 
-func (s *svc) ArgError(w http.ResponseWriter, msg string) {
-	http.Error(w, msg, 400)
-}
-
-func (s *svc) NotFoundError(w http.ResponseWriter, msg string) {
-	http.Error(w, msg, 404)
-}
-
-func (s *svc) Resp(w http.ResponseWriter, message string) {
-	_, err := fmt.Fprint(w, message)
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func (s *svc) RespBool(w http.ResponseWriter, b bool) {
-	s.Resp(w, fmt.Sprintf("%t", b))
-}
-
 func (s *svc) Count(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	s.Resp(w, fmt.Sprintf("Request number: %d", s.k.Begin().Count()))
+	s.Resp(w, CountResp{s.k.Begin().Count()})
 }
 
 func (s *svc) GetOrUpdate(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	key := p.ByName(keyName)
 	if key == "" {
-		s.ArgError(w, "no key specified")
+		s.ArgError(w, ErrResp{"no key specified"})
 		return
 	}
 
@@ -70,11 +47,11 @@ func (s *svc) GetOrUpdate(w http.ResponseWriter, r *http.Request, p httprouter.P
 	}
 
 	if value == "" {
-		s.NotFoundError(w, fmt.Sprintf("'%s' not found", key))
+		s.NotFoundError(w, GetOrUpdateResp{Key: key})
 		return
 	}
 
-	s.Resp(w, value)
+	s.Resp(w, GetOrUpdateResp{Key: key, Value: &value})
 }
 
 func (s *svc) Has(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -85,7 +62,7 @@ func (s *svc) Has(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	}
 
 	ok := s.k.Begin().Has(key)
-	s.RespBool(w, ok)
+	s.Resp(w, BoolResp{Key: key, Ok: ok})
 }
 
 func (s *svc) Del(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -96,12 +73,12 @@ func (s *svc) Del(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	}
 
 	ok := s.k.Begin().Del(key)
-	s.RespBool(w, ok)
+	s.Resp(w, BoolResp{Key: key, Ok: ok})
 }
 
 func (s *svc) List(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	keys := s.k.Begin().Keys()
-	s.Resp(w, strings.Join(keys, "\n"))
+	s.Resp(w, ListResp{Keys: keys})
 }
 
 func (s *svc) ListenAndServe(addr string) error {

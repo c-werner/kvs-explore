@@ -2,42 +2,51 @@ package com.example.simplekvs.controller
 
 import com.example.simplekvs.store.Store
 import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.server.ResponseStatusException
 
+// Response objects
+data class CountResponse(val request_count: Long)
+
+data class KeysResponse(val keys: List<String>)
+
+data class BoolResponse(val key: String, val ok: Boolean)
+
+data class KVResponse(val key: String, val value: String?)
+
+data class NotFoundException(val key :String): Throwable()
 
 @RestController
 class KVSController {
-    @ExceptionHandler(value = [(ResponseStatusException::class)])
-    fun handleUserAlreadyExists(ex: ResponseStatusException): ResponseEntity<String> {
-        return ResponseEntity.status(ex.status).body(ex.reason)
+    @ExceptionHandler(value = [(NotFoundException::class)])
+    fun handleNotFound(ex: NotFoundException): ResponseEntity<KVResponse> {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(KVResponse(ex.key, null))
     }
 
     @GetMapping("/")
     @ResponseBody
-    fun count(): String {
-        return Store.begin().count().toString()
+    fun count(): CountResponse {
+        return CountResponse(Store.begin().count())
     }
 
-    @GetMapping("/list", produces = [MediaType.TEXT_PLAIN_VALUE])
-    fun list(): String {
-        return Store.begin().keys().joinToString("\n")
+    @GetMapping("/list")
+    fun list(): KeysResponse {
+        return KeysResponse(Store.begin().keys())
     }
 
-    @GetMapping("/k/{key}", produces = [MediaType.TEXT_PLAIN_VALUE])
-    fun getOrUpdate(@PathVariable(value = "key") key: String, @RequestParam(value = "v") value: String?): String {
-        return Store.begin().update(key, value) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "key not found")
+    @GetMapping("/k/{key}")
+    fun getOrUpdate(@PathVariable(value = "key") key: String, @RequestParam(value = "v") value: String?): KVResponse {
+        val result = Store.begin().update(key, value) ?: throw NotFoundException(key)
+        return KVResponse(key, result)
     }
 
-    @GetMapping("/d/{key}", produces = [MediaType.TEXT_PLAIN_VALUE])
-    fun del(@PathVariable(value = "key") key: String): String {
-        return Store.begin().del(key).toString()
+    @GetMapping("/d/{key}")
+    fun del(@PathVariable(value = "key") key: String): BoolResponse {
+        return BoolResponse(key, Store.begin().del(key))
     }
 
-    @GetMapping("/h/{key}", produces = [MediaType.TEXT_PLAIN_VALUE])
-    fun has(@PathVariable(value = "key") key: String): String {
-        return Store.begin().has(key).toString()
+    @GetMapping("/h/{key}")
+    fun has(@PathVariable(value = "key") key: String): BoolResponse {
+        return BoolResponse(key, Store.begin().has(key))
     }
 }
